@@ -2,10 +2,13 @@ package summer.rest.worldcupfantasy.utils;
 
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import net.minidev.json.JSONObject;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.*;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.web.client.RestTemplate;
 import summer.rest.worldcupfantasy.entities.*;
 import summer.rest.worldcupfantasy.repos.*;
@@ -15,6 +18,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 
 @Configuration
@@ -36,24 +41,11 @@ public class Config {
     @Bean
     public void SeedDB() {
         try {
-            SeedGames();
-            SeedAll();
+            runAsync();
         } catch (Exception e) {
             System.out.println(e.getMessage());
-        }
-    }
 
-    private void SeedAll() {
-        Game game = this.gameRepo.findAll().get(0);
-        User user = new User("niv katz");
-        userRepo.save(user);
-        User user2 = new User("david");
-        userRepo.save(user2);
-        League league = new League("First League");
-        league.addNewUser(user);
-        leagueRepo.save(league);
-        Gamble gamble = new Gamble(4,2,user, game);
-        gambleRepo.save(gamble);
+        }
     }
 
     private LocalDateTime parseApiDate(String dateAsString) {
@@ -64,10 +56,57 @@ public class Config {
         }
     }
 
-    private void SeedGames() throws JsonProcessingException {
+
+    @Async
+    private void runAsync() {
+        String token = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2MzM4MjM3MGRhYTlhZmYzZTc0N2ZjZjgiLCJpYXQiOjE2NjQ2MjM0NzIsImV4cCI6MTY2NDcwOTg3Mn0.ysSHWDiB8V2ntbtElNAsytgn_1Vzjj7n9iznRrWSRHA";
+        CompletableFuture.supplyAsync(() -> this.callApi(token, true)).thenAccept(System.out::println);
+    }
+
+    public String callApi(String token, boolean tryAgain) {
+        try {
+            if (token != null) {
+                this.SeedGames(token);
+            }
+        } catch (Exception e) {
+            if (tryAgain) {
+                String t = "Bearer" + this.getToken().replace('"',' ');
+                System.out.println("fetch new token from the server...");
+                System.out.println("new token: " + t);
+                return this.callApi(("Bearer" + this.getToken()).replace('"',' '),false);
+            }
+            return "Bad";
+        }
+
+        return "Good";
+    }
+
+    private String getToken() {
+        try {
+            RestTemplate restTemplate = new RestTemplate();
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+
+            JSONObject json = new JSONObject();
+            json.put("name", "a");
+            json.put("email", String.format("%s@%s", UUID.randomUUID(), "israel.com"));
+            json.put("password", "12345678");
+            json.put("passwordConfirm", "12345678");
+
+            String response = restTemplate.
+                    postForObject("http://api.cup2022.ir/api/v1/user", new HttpEntity<>(json.toString(), headers), String.class);
+            JsonNode root = new ObjectMapper().readTree(response);
+            return root.path("data").path("token").toString();
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            return null;
+        }
+    }
+
+    private void SeedGames(String token) throws JsonProcessingException {
         RestTemplate restTemplate = new RestTemplate();
         HttpHeaders headers = new HttpHeaders();
-        headers.add("Authorization", "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2MzM2ZTQ4M2RhYTlhZmYzZTc0NjNlMDMiLCJpYXQiOjE2NjQ1NDE4MjgsImV4cCI6MTY2NDYyODIyOH0.-WMhGd4Gg-d6_qB7F9FIUi-Wg3jkGXDpw3HWbKHn3cw");
+        headers.add("Authorization", token);
         HttpEntity<String> entity = new HttpEntity<>("body", headers);
 
         ResponseEntity<String> response = restTemplate.exchange("http://api.cup2022.ir/api/v1/match", HttpMethod.GET,entity, String.class);

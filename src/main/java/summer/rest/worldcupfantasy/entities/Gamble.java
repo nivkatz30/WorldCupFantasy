@@ -28,12 +28,20 @@ public class Gamble {
     @JoinColumn(name = "game_id", nullable = false)
     Game game;
 
+    public void setResult() {
+        this.result = homeScore > awayScore ? "1" : awayScore > homeScore ? "2" : "X";
+    }
 
     public Gamble(Integer homeScore, Integer awayScore, User user, Game game) {
         this.homeScore = homeScore;
         this.awayScore = awayScore;
         this.user = user;
-        this.result = homeScore > awayScore ? "1" : awayScore > homeScore ? "2" : "X";
         this.game = game;
+        this.setResult();
+    }
+
+    public Gamble(User user, Game game) {
+        this.game = game;
+        this.user = user;
     }
 }
