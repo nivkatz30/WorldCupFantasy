@@ -2,6 +2,7 @@ package summer.rest.worldcupfantasy.controllers;
 
 
 import lombok.SneakyThrows;
+import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -33,8 +34,8 @@ public class UserController {
     }
 
     @GetMapping("/user")
-    public ResponseEntity<ApiResponse<List<UserDTO>>> getAllUsers() {
-        return ApiResponse.ok(this.userService.usersToUsersDTO(this.userRepo.findAll()));
+    public ResponseEntity<ApiResponse<CollectionModel<EntityModel<UserDTO>>>> getAllUsers() {
+        return ApiResponse.ok(userAssembler.toCollectionModel(this.userService.usersToUsersDTO(this.userRepo.findAll())));
     }
 
     @PostMapping("/user/sign-up")

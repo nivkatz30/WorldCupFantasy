@@ -2,6 +2,7 @@ package summer.rest.worldcupfantasy.models;
 
 
 import lombok.Data;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 

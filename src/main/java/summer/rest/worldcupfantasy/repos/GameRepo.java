@@ -16,7 +16,7 @@ public interface GameRepo extends JpaRepository<Game,Long> {
 
     @Query(value = "Select Game.* \n" +
             "from Game Join (Select Min(Game_Day) as Game_Day From Game Where Date_Of_Game > current_timestamp) as Not_Played_Games\n" +
-            "on Game.Game_Day = Not_Played_Games.Game_Day", nativeQuery = true)
+            "on Game.Game_Day = Not_Played_Games.Game_Day Where Date_Of_Game > current_timestamp", nativeQuery = true)
     List<Game> getNextMatchDay();
 
 
