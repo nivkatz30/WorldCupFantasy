@@ -40,6 +40,7 @@ public class Config {
             SeedAll();
         } catch (Exception e) {
             System.out.println(e.getMessage());
+
         }
     }
 
