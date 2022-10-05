@@ -42,19 +42,17 @@ public class GambleController {
     }
 
     @PutMapping("gamble/putGamble")
-    public ResponseEntity<ApiResponse<GambleDTO>> updateGamble(@RequestBody GambleRequest gambleRequest) throws ApiErrorResponse {
-        Game game = gameRepo.findOrThrowById(gambleRequest.getGameId());
+    public ResponseEntity<ApiResponse<GambleDTO>> updateGamble(@RequestBody GambleRequest request) throws ApiErrorResponse {
+        Game game = gameRepo.findOrThrowById(request.getGameId());
 
         if (gameRepo.getNextMatchDay().stream().noneMatch(g -> Objects.equals(g.getGameId(), game.getGameId()))) {
             throw new ApiErrorResponse(HttpStatus.BAD_REQUEST, "You cannot gamble on this game");
         }
 
-        User user = userRepo.getOrThrowById(gambleRequest.getUserId());
+        User user = userRepo.getOrThrowById(request.getUserId());
         Gamble gamble = gambleRepo.findByUserAndGame(user,game).orElse(new Gamble(user,game));
 
-        gamble.setAwayScore(gambleRequest.getAwayScore());
-        gamble.setHomeScore(gambleRequest.getHomeScore());
-        gamble.setResult();
+        gamble.setResult(request.getHomeScore(),request.getAwayScore());
         gambleRepo.save(gamble);
 
         return ApiResponse.ok(new GambleDTO(gamble));

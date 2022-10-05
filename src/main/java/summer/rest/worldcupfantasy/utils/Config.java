@@ -15,15 +15,12 @@ import summer.rest.worldcupfantasy.repos.*;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
 
 @Configuration
-public class Config {
+public class Config  {
     GameRepo gameRepo;
     UserRepo userRepo;
     GambleRepo gambleRepo;
@@ -38,6 +35,8 @@ public class Config {
         this.gameResultRepo = gameResultRepo;
     }
 
+
+
     @Bean
     public void SeedDB() {
         try {
@@ -49,17 +48,13 @@ public class Config {
     }
 
     private LocalDateTime parseApiDate(String dateAsString) {
-        try {
-            return LocalDateTime.parse(dateAsString,DateTimeFormatter.ofPattern("yyyy-MM-dd h:mm a"));
-        } catch (Exception e) {
-            return LocalDateTime.parse(dateAsString,DateTimeFormatter.ofPattern("yyyy-MM-dd h:mma"));
-        }
+        return LocalDateTime.parse(dateAsString,DateTimeFormatter.ofPattern("MM/d/yyyy HH:mm"));
     }
 
 
     @Async
     private void runAsync() {
-        String token = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2MzM4MjM3MGRhYTlhZmYzZTc0N2ZjZjgiLCJpYXQiOjE2NjQ2MjM0NzIsImV4cCI6MTY2NDcwOTg3Mn0.ysSHWDiB8V2ntbtElNAsytgn_1Vzjj7n9iznRrWSRHA";
+        String token = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2MzNiZmY4N2RhYTlhZmYzZTc0ZGVmOTEiLCJpYXQiOjE2NjQ4NzY0MjQsImV4cCI6MTY2NDk2MjgyNH0.KVPU51YrtlXzTHRE7b6YTGI56mwZry9Qj4u8_JxHJZ0";
         CompletableFuture.supplyAsync(() -> this.callApi(token, true)).thenAccept(System.out::println);
     }
 
@@ -98,7 +93,6 @@ public class Config {
             JsonNode root = new ObjectMapper().readTree(response);
             return root.path("data").path("token").toString();
         } catch (Exception e) {
-            System.out.println(e.getMessage());
             return null;
         }
     }
@@ -110,13 +104,14 @@ public class Config {
         HttpEntity<String> entity = new HttpEntity<>("body", headers);
 
         ResponseEntity<String> response = restTemplate.exchange("http://api.cup2022.ir/api/v1/match", HttpMethod.GET,entity, String.class);
-        HashMap result = new ObjectMapper().readValue(response.getBody(), HashMap.class);
-        List<HashMap<String,Object>> data = (ArrayList<HashMap<String,Object>>)(result.get("data"));
+        JsonNode root = new ObjectMapper().readTree(response.getBody()).path("data");
 
-        data.stream().forEach(game -> {
-            Game newGame = new Game(Integer.parseInt(game.get("matchday").toString()),game.get("home_team_en").toString()
-                    ,game.get("away_team_en").toString(),this.parseApiDate(game.get("local_date").toString()));
+        for (int i = 0; i<48; i++) {
+            Game newGame = new Game(Integer.parseInt(root.path(i).path("matchday").toString())
+                    ,root.path(i).path("home_team_en").textValue()
+                    ,root.path(i).path("away_team_en").textValue()
+                    ,this.parseApiDate(root.path(i).path("local_date").textValue()));
             gameRepo.save(newGame);
-        });
+        }
     }
 }

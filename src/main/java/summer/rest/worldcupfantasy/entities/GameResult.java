@@ -10,15 +10,11 @@ import javax.persistence.*;
 @Entity
 @Data
 @NoArgsConstructor
-public class GameResult {
+public class GameResult extends Result {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     Long id;
-
-    Integer homeScore;
-    Integer awayScore;
-    String result;
 
     @OneToOne
     @JsonIgnore
@@ -26,9 +22,11 @@ public class GameResult {
     Game game;
 
     public GameResult(Game game,Integer homeScore, Integer awayScore) {
+        super(homeScore,awayScore);
         this.game = game;
-        this.homeScore = homeScore;
-        this.awayScore = awayScore;
-        this.result = homeScore > awayScore ? "1" : awayScore > homeScore ? "2" : "X";
+    }
+
+    public GameResult(Game game) {
+        this.game = game;
     }
 }

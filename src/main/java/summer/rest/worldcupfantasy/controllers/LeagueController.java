@@ -24,10 +24,10 @@ public class LeagueController {
     UserRepo userRepo;
     UserService userService;
 
-    public LeagueController(LeagueRepo leagueRepo, UserRepo userRepo) {
+    public LeagueController(LeagueRepo leagueRepo, UserRepo userRepo,UserService userService) {
         this.leagueRepo = leagueRepo;
         this.userRepo = userRepo;
-        this.userService = new UserService(userRepo);
+        this.userService = userService;
     }
 
     @GetMapping("/league")

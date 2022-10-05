@@ -27,10 +27,10 @@ public class UserController {
     UserAssembler userAssembler;
 
 
-    public UserController(UserRepo userRepo, UserAssembler userAssembler) {
+    public UserController(UserRepo userRepo, UserAssembler userAssembler,UserService userService) {
         this.userRepo = userRepo;
         this.userAssembler = userAssembler;
-        this.userService = new UserService(userRepo);
+        this.userService = userService;
     }
 
     @GetMapping("/user")
@@ -46,7 +46,7 @@ public class UserController {
         }
 
         User user = new User(nickname);
-        return ApiResponse.ok(userAssembler.toModel(new UserDTO(userRepo.save(user), 0)));
+        return ApiResponse.respond(true,HttpStatus.CREATED, userAssembler.toModel(new UserDTO(userRepo.save(user), 0)));
     }
 
     @GetMapping("/user/{id}")

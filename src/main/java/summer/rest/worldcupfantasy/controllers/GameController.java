@@ -41,14 +41,15 @@ public class GameController {
     }
 
     @PutMapping("/game/updateResult")
-    public ResponseEntity<ApiResponse<Game>> updateGameResult(@RequestBody GameResultRequest gameResultRequest) throws ApiErrorResponse {
-        Game updatedGame = this.gameRepo.findOrThrowById(gameResultRequest.getGameId());
-        GameResult gameResult = new GameResult(updatedGame, gameResultRequest.getHomeScore(), gameResultRequest.getAwayScore());
+    public ResponseEntity<ApiResponse<Game>> updateGameResult(@RequestBody GameResultRequest request) throws ApiErrorResponse {
+        Game game = this.gameRepo.findOrThrowById(request.getGameId());
+        GameResult gameResult = this.gameResultRepo.findByGame(game).orElse(new GameResult(game));
 
-        updatedGame.setGameResult(gameResult);
+        gameResult.setResult(request.getHomeScore(),request.getAwayScore());
+        game.setGameResult(gameResult);
 
         this.gameResultRepo.save(gameResult);
-        this.gameRepo.save(updatedGame);
-        return ApiResponse.ok(updatedGame);
+        this.gameRepo.save(game);
+        return ApiResponse.ok(game);
     }
 }
