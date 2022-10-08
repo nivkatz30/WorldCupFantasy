@@ -14,7 +14,7 @@ import java.util.Optional;
 public interface UserRepo extends JpaRepository<User,Long> {
 
     @Query(value = "SELECT Gamble.User_Id as userId, Gamble.home_Score as gambleHomeScore, Gamble.away_Score as gambleAwayScore ,Game_Result.home_Score as resultHomeScore, Game_Result.away_Score as resultAwayScore " +
-            "From Gamble Inner Join Game_Result on Game_Result.game_Id = Gamble.game_Id " +
+            "From Gamble Inner Join Game_Result on Game_Result.game_game_Id = Gamble.game_Id " +
             "Where Gamble.result = Game_Result.result And Gamble.user_Id in ?1", nativeQuery = true)
     List<Score> getUsersScore(List<Long> ids);
 

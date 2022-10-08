@@ -5,13 +5,22 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import net.minidev.json.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.*;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import summer.rest.worldcupfantasy.entities.*;
+import summer.rest.worldcupfantasy.interceptors.AdminInterceptor;
+import summer.rest.worldcupfantasy.interceptors.JwtInterceptor;
+import summer.rest.worldcupfantasy.models.UserRole;
 import summer.rest.worldcupfantasy.repos.*;
+import summer.rest.worldcupfantasy.services.TokenService;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -20,41 +29,54 @@ import java.util.concurrent.CompletableFuture;
 
 
 @Configuration
-public class Config  {
-    GameRepo gameRepo;
-    UserRepo userRepo;
-    GambleRepo gambleRepo;
-    LeagueRepo leagueRepo;
-    GameResultRepo gameResultRepo;
+public class Config implements WebMvcConfigurer {
 
-    public Config(GameRepo gameRepo, UserRepo userRepo, GambleRepo gambleRepo, LeagueRepo leagueRepo, GameResultRepo gameResultRepo) {
+     private final GameRepo gameRepo;
+     private final UserRepo userRepo;
+     private final TokenService tokenService;
+
+    public Config(GameRepo gameRepo, UserRepo userRepo, TokenService tokenService) {
         this.gameRepo = gameRepo;
         this.userRepo = userRepo;
-        this.gambleRepo = gambleRepo;
-        this.leagueRepo = leagueRepo;
-        this.gameResultRepo = gameResultRepo;
+        this.tokenService = tokenService;
     }
-
-
 
     @Bean
     public void SeedDB() {
         try {
             runAsync();
+            SeedUsers();
         } catch (Exception e) {
             System.out.println(e.getMessage());
-
         }
+    }
+
+    private void SeedUsers() {
+        PasswordEncoder encoder = encoder();
+        User user = new User("niv katz", encoder.encode("nivkatz30"), UserRole.ADMIN);
+        User user2 = new User("david rimon", encoder.encode("davidrimon241194"), UserRole.ADMIN);
+        userRepo.save(user);
+        userRepo.save(user2);
+    }
+
+    @Bean
+    public PasswordEncoder encoder() {
+        return new BCryptPasswordEncoder();
     }
 
     private LocalDateTime parseApiDate(String dateAsString) {
         return LocalDateTime.parse(dateAsString,DateTimeFormatter.ofPattern("MM/d/yyyy HH:mm"));
     }
 
+    @Override
+    public void addInterceptors(InterceptorRegistry registry) {
+        registry.addInterceptor(new JwtInterceptor(this.tokenService)).excludePathPatterns("/user/sign-up", "/user/sign-in");
+        registry.addInterceptor(new AdminInterceptor(this.tokenService, this.userRepo)).addPathPatterns("/game/updateResult");
+    }
 
     @Async
     private void runAsync() {
-        String token = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2MzNiZmY4N2RhYTlhZmYzZTc0ZGVmOTEiLCJpYXQiOjE2NjQ4NzY0MjQsImV4cCI6MTY2NDk2MjgyNH0.KVPU51YrtlXzTHRE7b6YTGI56mwZry9Qj4u8_JxHJZ0";
+        String token = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2MzNmZjNiZWRhYTlhZmYzZTc1NDNkOTYiLCJpYXQiOjE2NjUxMzU1NTEsImV4cCI6MTY2NTIyMTk1MX0.umbzAmk5MLPGtulj9md1kueLd-gCFrcp0scNG_R818o";
         CompletableFuture.supplyAsync(() -> this.callApi(token, true)).thenAccept(System.out::println);
     }
 

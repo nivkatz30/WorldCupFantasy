@@ -20,9 +20,9 @@ import java.util.Objects;
 
 @RestController
 public class LeagueController {
-    LeagueRepo leagueRepo;
-    UserRepo userRepo;
-    UserService userService;
+    private final LeagueRepo leagueRepo;
+    private final UserRepo userRepo;
+    private final UserService userService;
 
     public LeagueController(LeagueRepo leagueRepo, UserRepo userRepo,UserService userService) {
         this.leagueRepo = leagueRepo;

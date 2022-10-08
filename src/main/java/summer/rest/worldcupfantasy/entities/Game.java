@@ -29,7 +29,6 @@ public class Game {
     List<Gamble> gambles = new ArrayList<>();
 
     @OneToOne
-    @JoinColumn(name = "gameResult_id", nullable = true)
     GameResult gameResult;
 
 

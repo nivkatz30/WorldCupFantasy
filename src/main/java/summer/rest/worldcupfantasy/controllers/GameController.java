@@ -14,8 +14,8 @@ import java.util.List;
 
 @RestController
 public class GameController {
-    GameRepo gameRepo;
-    GameResultRepo gameResultRepo;
+    private final GameRepo gameRepo;
+    private final GameResultRepo gameResultRepo;
 
 
     public GameController(GameRepo gameRepo, GameResultRepo gameResultRepo) {
