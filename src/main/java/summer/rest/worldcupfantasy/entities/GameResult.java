@@ -13,12 +13,11 @@ import javax.persistence.*;
 public class GameResult extends Result {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
     Long id;
 
+    @MapsId
     @OneToOne
     @JsonIgnore
-    @JoinColumn(name = "game_id", nullable = false)
     Game game;
 
     public GameResult(Game game,Integer homeScore, Integer awayScore) {

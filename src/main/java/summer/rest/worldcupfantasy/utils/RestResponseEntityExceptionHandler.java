@@ -37,4 +37,6 @@ public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionH
         ApiErrorResponse errorResponse = new ApiErrorResponse(status,ex.getMessage());
         return handle(errorResponse, request);
     }
+
+
 }

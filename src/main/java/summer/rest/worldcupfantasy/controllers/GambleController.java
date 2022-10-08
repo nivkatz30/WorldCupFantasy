@@ -45,7 +45,7 @@ public class GambleController {
     public ResponseEntity<ApiResponse<GambleDTO>> updateGamble(@RequestBody GambleRequest request) throws ApiErrorResponse {
         Game game = gameRepo.findOrThrowById(request.getGameId());
 
-        if (gameRepo.getNextMatchDay().stream().noneMatch(g -> Objects.equals(g.getGameId(), game.getGameId()))) {
+        if (game.getGameResult() != null || gameRepo.getNextMatchDay().stream().noneMatch(g -> Objects.equals(g.getGameId(), request.getGameId()))) {
             throw new ApiErrorResponse(HttpStatus.BAD_REQUEST, "You cannot gamble on this game");
         }
 
