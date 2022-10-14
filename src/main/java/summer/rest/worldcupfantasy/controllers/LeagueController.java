@@ -1,9 +1,12 @@
 package summer.rest.worldcupfantasy.controllers;
 
 
+import org.springframework.hateoas.CollectionModel;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import summer.rest.worldcupfantasy.assemblers.LeagueAssembler;
 import summer.rest.worldcupfantasy.dto.LeagueDTO;
 import summer.rest.worldcupfantasy.dto.UserDTO;
 import summer.rest.worldcupfantasy.entities.League;
@@ -17,6 +20,7 @@ import summer.rest.worldcupfantasy.services.UserService;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 @RestController
 public class LeagueController {
@@ -24,29 +28,34 @@ public class LeagueController {
     private final UserRepo userRepo;
     private final UserService userService;
 
-    public LeagueController(LeagueRepo leagueRepo, UserRepo userRepo,UserService userService) {
+    private final LeagueAssembler leagueAssembler;
+
+    public LeagueController(LeagueRepo leagueRepo, UserRepo userRepo, UserService userService, LeagueAssembler leagueAssembler) {
         this.leagueRepo = leagueRepo;
         this.userRepo = userRepo;
         this.userService = userService;
+        this.leagueAssembler = leagueAssembler;
     }
 
-    @GetMapping("/league")
-    public ResponseEntity<ApiResponse<List<League>>> getAllLeagues() {
-        return ApiResponse.ok(this.leagueRepo.findAll());
+    @GetMapping("/leagues")
+    public ResponseEntity<ApiResponse<CollectionModel<EntityModel<LeagueDTO>>>> getAllLeagues() {
+        List<League> leagues = this.leagueRepo.findAll();
+        List<LeagueDTO> dtoLeagues = leagues.stream().map(league -> new LeagueDTO(league,this.userService.usersToUsersDTO(league.getUsers()))).collect(Collectors.toList());
+        return ApiResponse.ok(this.leagueAssembler.toCollectionModel(dtoLeagues));
     }
 
     @GetMapping("/leagues/{id}")
-    public ResponseEntity<ApiResponse<LeagueDTO>> getSingleLeague(@PathVariable Long id) throws ApiErrorResponse {
+    public ResponseEntity<ApiResponse<EntityModel<LeagueDTO>>> getSingleLeague(@PathVariable Long id) throws ApiErrorResponse {
         League league = leagueRepo.getOrThrowById(id);
         List<UserDTO> leagueUsers = this.userService.usersToUsersDTO(league.getUsers());
-        return ApiResponse.ok(new LeagueDTO(league,leagueUsers));
+        return ApiResponse.ok(this.leagueAssembler.toModel(new LeagueDTO(league,leagueUsers)));
     }
 
-    @GetMapping("/league/name/{name}")
-    public ResponseEntity<ApiResponse<LeagueDTO>> getLeagueByName(@PathVariable String name) throws ApiErrorResponse {
+    @GetMapping("/leagues/name/{name}")
+    public ResponseEntity<ApiResponse<EntityModel<LeagueDTO>>> getLeagueByName(@PathVariable String name) throws ApiErrorResponse {
         League league = leagueRepo.findByName(name).orElseThrow(() -> new ApiErrorResponse(HttpStatus.BAD_REQUEST, "League with given name is not found"));
         List<UserDTO> leagueUsers = this.userService.usersToUsersDTO(league.getUsers());
-        return ApiResponse.ok(new LeagueDTO(league,leagueUsers));
+        return ApiResponse.ok(this.leagueAssembler.toModel(new LeagueDTO(league,leagueUsers)));
     }
 
     @PostMapping("/leagues/addUser")
@@ -63,7 +72,7 @@ public class LeagueController {
         return ApiResponse.respond(true,HttpStatus.OK, "User is successfully added to this league");
     }
 
-    @PostMapping("/league")
+    @PostMapping("/leagues/addNewLeague")
     public ResponseEntity<ApiResponse<League>> addNewLeague(@RequestParam String leagueName) throws ApiErrorResponse {
         if (leagueRepo.findByName(leagueName).isPresent()) {
             throw new ApiErrorResponse(HttpStatus.BAD_REQUEST, "Given league name is already taken. please try again with another name");
@@ -75,7 +84,7 @@ public class LeagueController {
         return ApiResponse.ok(league);
     }
 
-    @DeleteMapping("/league/removeUser")
+    @DeleteMapping("/leagues/removeUser")
     public ResponseEntity<ApiResponse<Object>> removeUserFromLeague(@RequestParam Long leagueId, @RequestParam Long userId) throws ApiErrorResponse {
         League league = leagueRepo.getOrThrowById(leagueId);
         league.removeUser(userId);
