@@ -5,11 +5,13 @@ import lombok.NoArgsConstructor;
 
 import javax.persistence.MappedSuperclass;
 
+/**
+ * This class represent a Result.
+ */
 @Data
 @NoArgsConstructor
 @MappedSuperclass
 public class Result {
-
     Integer homeScore;
     Integer awayScore;
     String result;

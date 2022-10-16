@@ -4,6 +4,7 @@ package summer.rest.worldcupfantasy.utils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sun.xml.bind.v2.TODO;
 import net.minidev.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -12,6 +13,7 @@ import org.springframework.http.*;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.util.AntPathMatcher;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
@@ -68,15 +70,19 @@ public class Config implements WebMvcConfigurer {
         return LocalDateTime.parse(dateAsString,DateTimeFormatter.ofPattern("MM/d/yyyy HH:mm"));
     }
 
+    /**
+     *
+     * @param registry
+     */
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        registry.addInterceptor(new JwtInterceptor(this.tokenService)).excludePathPatterns("/user/sign-up", "/user/sign-in");
-        registry.addInterceptor(new AdminInterceptor(this.tokenService, this.userRepo)).addPathPatterns("/game/updateResult");
+        //registry.addInterceptor(new JwtInterceptor(this.tokenService)).excludePathPatterns("/user/sign-up", "/user/sign-in", "/swagger-ui/**", "/api.html", "/v3/**").pathMatcher(new AntPathMatcher());
+        //registry.addInterceptor(new AdminInterceptor(this.tokenService, this.userRepo)).addPathPatterns("/game/updateResult");
     }
 
     @Async
-    private void runAsync() {
-        String token = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2MzNmZjNiZWRhYTlhZmYzZTc1NDNkOTYiLCJpYXQiOjE2NjUxMzU1NTEsImV4cCI6MTY2NTIyMTk1MX0.umbzAmk5MLPGtulj9md1kueLd-gCFrcp0scNG_R818o";
+    void runAsync() {
+        String token = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2MzQ5MTc3YmRhYTlhZmYzZTc1YWE4MTEiLCJpYXQiOjE2NjU3MzQ1MjQsImV4cCI6MTY2NTgyMDkyNH0.3ogIsf8zdrZz4jXfkIllZkx3vbDtl8NsQfMKMBmf5DY";
         CompletableFuture.supplyAsync(() -> this.callApi(token, true)).thenAccept(System.out::println);
     }
 

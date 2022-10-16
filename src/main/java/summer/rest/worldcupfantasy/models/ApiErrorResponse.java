@@ -7,8 +7,6 @@ import java.util.LinkedHashMap;
 
 
 public class ApiErrorResponse extends Exception {
-
-
     private final Integer status;
     private final String message;
 

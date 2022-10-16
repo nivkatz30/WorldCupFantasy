@@ -11,6 +11,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * This class manage the user class actions.
+ */
 @Service
 public class UserService  {
     UserRepo userRepo;
@@ -19,6 +22,11 @@ public class UserService  {
         this.userRepo = userRepo;
     }
 
+    /**
+     * This method convert a user object to a user dto for client view.
+     * @param users
+     * @return
+     */
     public List<UserDTO> usersToUsersDTO(List<User> users) {
         List<Score> usersScores = this.userRepo.getUsersScore(users.stream().map(User::getUserId).collect(Collectors.toList()));
         HashMap<Long,Integer> userToScore = new HashMap<>();

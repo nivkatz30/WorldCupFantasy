@@ -7,6 +7,9 @@ import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 
+/**
+ * This class represent a result of Game.
+ */
 @Entity
 @Data
 @NoArgsConstructor

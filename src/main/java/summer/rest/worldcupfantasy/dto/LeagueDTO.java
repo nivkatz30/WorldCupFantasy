@@ -5,6 +5,9 @@ import summer.rest.worldcupfantasy.entities.League;
 
 import java.util.List;
 
+/**
+ *This class expose only the client necessary arguments of League.
+ */
 @JsonPropertyOrder({"leagueId","name", "users"})
 public class LeagueDTO {
 

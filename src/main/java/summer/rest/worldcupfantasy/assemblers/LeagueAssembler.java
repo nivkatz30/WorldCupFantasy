@@ -4,11 +4,12 @@ import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.server.RepresentationModelAssembler;
 import org.springframework.stereotype.Component;
-import summer.rest.worldcupfantasy.dto.UserDTO;
+import summer.rest.worldcupfantasy.controllers.LeagueController;
 import summer.rest.worldcupfantasy.controllers.UserController;
+import summer.rest.worldcupfantasy.dto.LeagueDTO;
+import summer.rest.worldcupfantasy.dto.UserDTO;
 import summer.rest.worldcupfantasy.models.ApiErrorResponse;
 
-import java.util.ArrayList;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -16,35 +17,35 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 /**
- * This class add locations links to User class presentation.
+ * This class add locations links to League class presentation.
  */
 @Component
-public class UserAssembler implements RepresentationModelAssembler<UserDTO, EntityModel<UserDTO>> {
+public class LeagueAssembler implements RepresentationModelAssembler<LeagueDTO, EntityModel<LeagueDTO>> {
 
     /**
-     * This method convert a User DTO object to entity model of User DTO with the necessary links.
+     * This method convert a League DTO object to entity model of League DTO with the necessary links.
      * @param entity
      * @return
      */
     @Override
-    public EntityModel<UserDTO> toModel(UserDTO entity) {
+    public EntityModel<LeagueDTO> toModel(LeagueDTO entity) {
         try {
             return EntityModel.of(entity,
-                    linkTo(methodOn(UserController.class).getUser(entity.getUser().getUserId())).withSelfRel(),
-                    linkTo(methodOn(UserController.class).getAllUsers()).withRel("allUsers"));
+                    linkTo(methodOn(LeagueController.class).getSingleLeague(entity.getLeagueId())).withSelfRel(),
+                    linkTo(methodOn(LeagueController.class).getAllLeagues()).withRel("allLeagues"));
         } catch (ApiErrorResponse e) {
             throw new RuntimeException(e);
         }
     }
 
     /**
-     * This method convert an iterable of User DTO object to collection model of entity model of User DTO with the necessary links.
+     * This method convert an iterable of League DTO object to collection model of entity model of League DTO with the necessary links.
      * @param entities
      * @return
      */
     @Override
-    public CollectionModel<EntityModel<UserDTO>> toCollectionModel(Iterable<? extends UserDTO> entities) {
+    public CollectionModel<EntityModel<LeagueDTO>> toCollectionModel(Iterable<? extends LeagueDTO> entities) {
         return CollectionModel.of(StreamSupport.stream(entities.spliterator(),false).map(this::toModel).collect(Collectors.toList()))
-                .add(linkTo(methodOn((UserController.class)).getAllUsers()).withSelfRel());
+                .add(linkTo(methodOn((LeagueController.class)).getAllLeagues()).withSelfRel());
     }
 }
