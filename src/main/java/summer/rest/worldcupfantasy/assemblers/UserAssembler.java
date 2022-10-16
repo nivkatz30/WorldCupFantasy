@@ -15,11 +15,17 @@ import java.util.stream.StreamSupport;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
-
+/**
+ * This class add locations links to User class presentation.
+ */
 @Component
 public class UserAssembler implements RepresentationModelAssembler<UserDTO, EntityModel<UserDTO>> {
 
-
+    /**
+     * This method convert a User DTO object to entity model of User DTO with the necessary links.
+     * @param entity
+     * @return
+     */
     @Override
     public EntityModel<UserDTO> toModel(UserDTO entity) {
         try {
@@ -31,6 +37,11 @@ public class UserAssembler implements RepresentationModelAssembler<UserDTO, Enti
         }
     }
 
+    /**
+     * This method convert an iterable of User DTO object to collection model of entity model of User DTO with the necessary links.
+     * @param entities
+     * @return
+     */
     @Override
     public CollectionModel<EntityModel<UserDTO>> toCollectionModel(Iterable<? extends UserDTO> entities) {
         return CollectionModel.of(StreamSupport.stream(entities.spliterator(),false).map(this::toModel).collect(Collectors.toList()))

@@ -16,11 +16,17 @@ import java.util.stream.StreamSupport;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
-
+/**
+ * This class add locations links to Game class presentation.
+ */
 @Component
 public class GameAssembler implements RepresentationModelAssembler<Game, EntityModel<Game>> {
 
-
+    /**
+     * This method convert a Game object to entity model of Game with the necessary links.
+     * @param entity
+     * @return
+     */
     @Override
     public EntityModel<Game> toModel(Game entity) {
         try {
@@ -32,6 +38,11 @@ public class GameAssembler implements RepresentationModelAssembler<Game, EntityM
         }
     }
 
+    /**
+     * This method convert an iterable of Game object to collection model of entity model of Game with the necessary links.
+     * @param entities
+     * @return
+     */
     @Override
     public CollectionModel<EntityModel<Game>> toCollectionModel(Iterable<? extends Game> entities) {
         return CollectionModel.of(StreamSupport.stream(entities.spliterator(),false).map(this::toModel).collect(Collectors.toList()))

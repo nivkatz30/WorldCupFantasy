@@ -16,11 +16,17 @@ import java.util.stream.StreamSupport;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
-
+/**
+ * This class add locations links to League class presentation.
+ */
 @Component
 public class LeagueAssembler implements RepresentationModelAssembler<LeagueDTO, EntityModel<LeagueDTO>> {
 
-
+    /**
+     * This method convert a League DTO object to entity model of League DTO with the necessary links.
+     * @param entity
+     * @return
+     */
     @Override
     public EntityModel<LeagueDTO> toModel(LeagueDTO entity) {
         try {
@@ -32,6 +38,11 @@ public class LeagueAssembler implements RepresentationModelAssembler<LeagueDTO, 
         }
     }
 
+    /**
+     * This method convert an iterable of League DTO object to collection model of entity model of League DTO with the necessary links.
+     * @param entities
+     * @return
+     */
     @Override
     public CollectionModel<EntityModel<LeagueDTO>> toCollectionModel(Iterable<? extends LeagueDTO> entities) {
         return CollectionModel.of(StreamSupport.stream(entities.spliterator(),false).map(this::toModel).collect(Collectors.toList()))

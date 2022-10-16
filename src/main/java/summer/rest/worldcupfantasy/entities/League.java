@@ -11,6 +11,9 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+/**
+ * This class represent a League.
+ */
 @Entity
 @Data
 @NoArgsConstructor
@@ -19,7 +22,6 @@ public class League {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     Long leagueId;
-
     String name;
 
     @ManyToMany
@@ -33,7 +35,6 @@ public class League {
                              columnNames = {"user_id", "leagues_id"}
                      )
             }
-
      )
     List<User> users = new ArrayList<>();
 

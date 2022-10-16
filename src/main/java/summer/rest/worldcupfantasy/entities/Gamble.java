@@ -6,6 +6,9 @@ import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 
+/**
+ * This class represent a gamble.
+ */
 @Entity
 @Data
 @NoArgsConstructor
@@ -14,7 +17,6 @@ public class Gamble extends Result {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     Long gambleId;
-
 
     @ManyToOne
     @JsonIgnore

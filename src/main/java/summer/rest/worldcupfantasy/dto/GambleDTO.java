@@ -5,6 +5,9 @@ import lombok.Value;
 import summer.rest.worldcupfantasy.entities.Gamble;
 import summer.rest.worldcupfantasy.entities.User;
 
+/**
+ *This class expose only the client necessary arguments of Gamble.
+ */
 @Value
 @JsonPropertyOrder({"gamble", "user"})
 public class GambleDTO {

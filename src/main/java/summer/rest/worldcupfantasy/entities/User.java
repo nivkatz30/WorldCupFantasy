@@ -11,6 +11,9 @@ import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * This class represent a User.
+ */
 @Entity
 @Data
 @NoArgsConstructor
@@ -39,5 +42,4 @@ public class User {
         this.password = password;
         this.role = role;
     }
-
 }

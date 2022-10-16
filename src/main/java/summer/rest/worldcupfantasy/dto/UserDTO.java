@@ -4,6 +4,9 @@ package summer.rest.worldcupfantasy.dto;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import summer.rest.worldcupfantasy.entities.User;
 
+/**
+ *This class expose only the client necessary arguments of User.
+ */
 @JsonPropertyOrder({"user,score"})
 public class UserDTO {
 

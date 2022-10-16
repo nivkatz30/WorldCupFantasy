@@ -21,13 +21,15 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+/**
+ * This class manage all the related endpoints of Gambles
+ */
 @RestController
 public class GambleController {
 
     private final GambleRepo gambleRepo;
     private final GameRepo gameRepo;
     private final UserRepo userRepo;
-
     private final GambleAssembler gambleAssembler;
 
     public GambleController(GambleRepo gambleRepo, GameRepo gameRepo, UserRepo userRepo, GambleAssembler gambleAssembler) {
@@ -37,17 +39,33 @@ public class GambleController {
         this.gambleAssembler = gambleAssembler;
     }
 
+    /**
+     * This method find a specific gamble by his ID.
+     * @param gambleId
+     * @return
+     * @throws ApiErrorResponse
+     */
     @GetMapping("gambles/{id}")
     public ResponseEntity<ApiResponse<EntityModel<GambleDTO>>> getGambleById(@PathVariable Long gambleId) throws ApiErrorResponse{
         Gamble gamble = this.gambleRepo.findById(gambleId).orElseThrow(() -> new ApiErrorResponse(HttpStatus.NOT_FOUND, "There is no gamble"));
         return ApiResponse.ok(this.gambleAssembler.toModel(new GambleDTO(gamble)));
     }
 
+    /**
+     * This method find all the existing gambles.
+     * @return
+     */
     @GetMapping("gambles")
     public ResponseEntity<ApiResponse<CollectionModel<EntityModel<GambleDTO>>>> getAllGambles(){
         return ApiResponse.ok(this.gambleAssembler.toCollectionModel(this.gambleRepo.findAll().stream().map(gamble -> new GambleDTO(gamble)).collect(Collectors.toList())));
     }
 
+    /**
+     * This method find all the gambles that related to a specific game.
+     * @param gameId
+     * @return
+     * @throws ApiErrorResponse
+     */
     @GetMapping("gambles/game/{gameId}")
     public ResponseEntity<ApiResponse<CollectionModel<EntityModel<GambleDTO>>>> getAllGamblesPerGame(@PathVariable Long gameId) throws ApiErrorResponse {
         Game currentGame = this.gameRepo.findOrThrowById(gameId);
@@ -56,6 +74,12 @@ public class GambleController {
         return ApiResponse.ok(this.gambleAssembler.toCollectionModel(responseData));
     }
 
+    /**
+     * This method change existing gamble to a new one if there is a valid gamble, and if isn't, new gamble created.
+     * @param request
+     * @return
+     * @throws ApiErrorResponse
+     */
     @PutMapping("gambles/putGamble")
     public ResponseEntity<ApiResponse<GambleDTO>> updateGamble(@RequestBody GambleRequest request) throws ApiErrorResponse {
         Game game = gameRepo.findOrThrowById(request.getGameId());

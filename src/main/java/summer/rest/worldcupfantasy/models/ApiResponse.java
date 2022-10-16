@@ -21,7 +21,6 @@ public class ApiResponse<T> {
         this.data = data;
     }
 
-
     public static <T>ResponseEntity<ApiResponse<T>> respond(Boolean success, HttpStatus status, String message, T data) {
         ApiResponse<T> response = new ApiResponse<>(success,status.value(), message, data);
 

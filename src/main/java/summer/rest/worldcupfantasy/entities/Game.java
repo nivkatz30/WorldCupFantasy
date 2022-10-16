@@ -9,6 +9,9 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * This class represent a Game.
+ */
 @Entity
 @Data
 @NoArgsConstructor
@@ -17,11 +20,9 @@ public class Game {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     Long gameId;
-
     Integer gameDay;
     String homeTeam;
     String awayTeam;
-
     LocalDateTime dateOfGame;
 
     @OneToMany(mappedBy = "game")
@@ -30,7 +31,6 @@ public class Game {
 
     @OneToOne
     GameResult gameResult;
-
 
     public Game(Integer gameDay, String homeTeam, String awayTeam, LocalDateTime dateOfGame) {
         this.gameDay = gameDay;
