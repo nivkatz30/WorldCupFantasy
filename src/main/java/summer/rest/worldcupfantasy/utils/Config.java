@@ -24,6 +24,7 @@ import summer.rest.worldcupfantasy.models.UserRole;
 import summer.rest.worldcupfantasy.repos.*;
 import summer.rest.worldcupfantasy.services.TokenService;
 
+import java.io.File;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -53,6 +54,24 @@ public class Config implements WebMvcConfigurer {
         }
     }
 
+    private String getGamesFromBackup() {
+        try {
+            File myObj = new File("src/main/resources/static/Games.json");
+            Scanner myReader = new Scanner(myObj);
+            StringBuilder json = new StringBuilder();
+            while (myReader.hasNextLine()) {
+                json.append(myReader.nextLine());
+            }
+
+            myReader.close();
+            return json.toString();
+
+        } catch (Exception e) {
+            System.out.println("An error occurred.");
+            return null;
+        }
+    }
+
     private void SeedUsers() {
         PasswordEncoder encoder = encoder();
         User user = new User("niv katz", encoder.encode("nivkatz30"), UserRole.ADMIN);
@@ -76,32 +95,39 @@ public class Config implements WebMvcConfigurer {
      */
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        //registry.addInterceptor(new JwtInterceptor(this.tokenService)).excludePathPatterns("/user/sign-up", "/user/sign-in", "/swagger-ui/**", "/api.html", "/v3/**").pathMatcher(new AntPathMatcher());
-        //registry.addInterceptor(new AdminInterceptor(this.tokenService, this.userRepo)).addPathPatterns("/game/updateResult");
+        registry.addInterceptor(new JwtInterceptor(this.tokenService))
+                .excludePathPatterns("/users/sign-up", "/users/sign-in", "/swagger-ui/**", "/api.html", "/v3/**", "/favicon.ico")
+                .pathMatcher(new AntPathMatcher());
+        registry.addInterceptor(new AdminInterceptor(this.tokenService, this.userRepo)).addPathPatterns("/games/updateResult");
     }
 
     @Async
     void runAsync() {
-        String token = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2MzQ5MTc3YmRhYTlhZmYzZTc1YWE4MTEiLCJpYXQiOjE2NjU3MzQ1MjQsImV4cCI6MTY2NTgyMDkyNH0.3ogIsf8zdrZz4jXfkIllZkx3vbDtl8NsQfMKMBmf5DY";
+        String token = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2MzRkMGZmNWRhYTlhZmYzZTc1YjdkMGIiLCJpYXQiOjE2NjU5OTQ3NDIsImV4cCI6MTY2NjA4MTE0Mn0.Yg22qdI8djhdrih1KHw-Zqa_tWOX-zH2j2tiptBhljM";
         CompletableFuture.supplyAsync(() -> this.callApi(token, true)).thenAccept(System.out::println);
     }
 
     public String callApi(String token, boolean tryAgain) {
         try {
-            if (token != null) {
-                this.SeedGames(token);
-            }
+            this.SeedGames(token);
+
         } catch (Exception e) {
             if (tryAgain) {
-                String t = "Bearer" + this.getToken().replace('"',' ');
-                System.out.println("fetch new token from the server...");
-                System.out.println("new token: " + t);
-                return this.callApi(("Bearer" + this.getToken()).replace('"',' '),false);
+                String newToken = getToken();
+                if (newToken != null) {
+                    String t = "Bearer" + newToken.replace('"',' ');
+                    System.out.println("fetch new token from the server...");
+                    System.out.println("new token: " + t);
+                    return this.callApi(("Bearer" + this.getToken()).replace('"',' '),false);
+                } else {
+                    this.insetGamesToDB(this.getGamesFromBackup());
+                    return "Load games from backup successfully";
+                }
             }
-            return "Bad";
+            return "Cannot read the games from the api";
         }
 
-        return "Good";
+        return "Load the games from the api successfully";
     }
 
     private String getToken() {
@@ -130,16 +156,21 @@ public class Config implements WebMvcConfigurer {
         HttpHeaders headers = new HttpHeaders();
         headers.add("Authorization", token);
         HttpEntity<String> entity = new HttpEntity<>("body", headers);
-
         ResponseEntity<String> response = restTemplate.exchange("http://api.cup2022.ir/api/v1/match", HttpMethod.GET,entity, String.class);
-        JsonNode root = new ObjectMapper().readTree(response.getBody()).path("data");
+        insetGamesToDB(response.getBody());
+    }
 
-        for (int i = 0; i<48; i++) {
-            Game newGame = new Game(Integer.parseInt(root.path(i).path("matchday").toString())
-                    ,root.path(i).path("home_team_en").textValue()
-                    ,root.path(i).path("away_team_en").textValue()
-                    ,this.parseApiDate(root.path(i).path("local_date").textValue()));
-            gameRepo.save(newGame);
-        }
+    private void insetGamesToDB(String json) {
+       try {
+           JsonNode root = new ObjectMapper().readTree(json).path("data");
+
+           for (int i = 0; i<48; i++) {
+               Game newGame = new Game(Integer.parseInt(root.path(i).path("matchday").toString())
+                       ,root.path(i).path("home_team_en").textValue()
+                       ,root.path(i).path("away_team_en").textValue()
+                       ,this.parseApiDate(root.path(i).path("local_date").textValue()));
+               gameRepo.save(newGame);
+           }
+       } catch (Exception e) {}
     }
 }

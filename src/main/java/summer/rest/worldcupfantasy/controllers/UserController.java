@@ -48,7 +48,7 @@ public class UserController {
      * This method find all the existing users.
      * @return
      */
-    @GetMapping("/user")
+    @GetMapping("/users")
     public ResponseEntity<ApiResponse<CollectionModel<EntityModel<UserDTO>>>> getAllUsers() {
         return ApiResponse.ok(userAssembler.toCollectionModel(this.userService.usersToUsersDTO(this.userRepo.findAll())));
     }
@@ -59,7 +59,7 @@ public class UserController {
      * @return
      * @throws ApiErrorResponse
      */
-    @PostMapping("/user/sign-up")
+    @PostMapping("/users/sign-up")
     public ResponseEntity<ApiResponse<EntityModel<UserDTO>>> signUp(@RequestBody SignUpRequest request) throws ApiErrorResponse {
         if (userRepo.findByNickname(request.getNickname()).isPresent()) {
             throw new ApiErrorResponse(HttpStatus.BAD_REQUEST,
@@ -77,7 +77,7 @@ public class UserController {
      * @return
      * @throws ApiErrorResponse
      */
-    @PostMapping("/user/sign-in")
+    @PostMapping("/users/sign-in")
     public ResponseEntity<ApiResponse<EntityModel<UserDTO>>> signIn(@RequestBody SignUpRequest request) throws ApiErrorResponse {
         User user = userRepo.findByNickname(request.getNickname())
                 .orElseThrow(() -> new ApiErrorResponse(HttpStatus.BAD_REQUEST, "User with given nickname is not found"));
@@ -97,7 +97,7 @@ public class UserController {
      * @return
      * @throws ApiErrorResponse
      */
-    @GetMapping("/user/{id}")
+    @GetMapping("/users/{id}")
     public ResponseEntity<ApiResponse<EntityModel<UserDTO>>> getUser(@PathVariable Long id) throws ApiErrorResponse {
         User user = this.userRepo.getOrThrowById(id);
         return ApiResponse.ok(userAssembler.toModel(this.userService.usersToUsersDTO(Collections.singletonList(user)).get(0)));
@@ -109,7 +109,7 @@ public class UserController {
      * @return
      */
     @SneakyThrows
-    @GetMapping("/user/leagues/{id}")
+    @GetMapping("/users/leagues/{id}")
     public ResponseEntity<ApiResponse<List<League>>> getUserLeagues(@PathVariable Long id) {
         User user = this.userRepo.getOrThrowById(id);
         return ApiResponse.ok(user.getLeagues());
@@ -121,7 +121,7 @@ public class UserController {
      * @return
      */
     @SneakyThrows
-    @GetMapping("/user/gambles/{id}")
+    @GetMapping("/users/gambles/{id}")
     public ResponseEntity<ApiResponse<List<Gamble>>> getUserGambling(@PathVariable Long id) {
         User user = this.userRepo.getOrThrowById(id);
         return ApiResponse.ok(user.getGambles());
