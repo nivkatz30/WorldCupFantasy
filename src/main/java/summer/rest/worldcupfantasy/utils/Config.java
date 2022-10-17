@@ -4,9 +4,7 @@ package summer.rest.worldcupfantasy.utils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sun.xml.bind.v2.TODO;
 import net.minidev.json.JSONObject;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.*;
@@ -150,7 +148,7 @@ public class Config implements WebMvcConfigurer {
                     System.out.println("new token: " + t);
                     return this.callApi(("Bearer" + this.getToken()).replace('"',' '),false);
                 } else {
-                    this.insetGamesToDB(this.getGamesFromBackup());
+                    this.insertGamesToDB(this.getGamesFromBackup());
                     return "Load games from backup successfully";
                 }
             }
@@ -196,14 +194,14 @@ public class Config implements WebMvcConfigurer {
         headers.add("Authorization", token);
         HttpEntity<String> entity = new HttpEntity<>("body", headers);
         ResponseEntity<String> response = restTemplate.exchange("http://api.cup2022.ir/api/v1/match", HttpMethod.GET,entity, String.class);
-        insetGamesToDB(response.getBody());
+        insertGamesToDB(response.getBody());
     }
 
     /**
      * This method initialize the games we have got in the DB.
      * @param json
      */
-    private void insetGamesToDB(String json) {
+    private void insertGamesToDB(String json) {
        try {
            JsonNode root = new ObjectMapper().readTree(json).path("data");
 
