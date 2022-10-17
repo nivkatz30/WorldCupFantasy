@@ -29,7 +29,7 @@ public class TokenService {
     }
 
     /**\
-     *
+     * This method check the validity of the givan token by the client.
      * @param token
      * @return
      */
