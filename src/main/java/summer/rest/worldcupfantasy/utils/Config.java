@@ -30,7 +30,9 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
-
+/**
+ * This class has been scanned before the application runs and define the necessaries.
+ */
 @Configuration
 public class Config implements WebMvcConfigurer {
 
@@ -44,6 +46,9 @@ public class Config implements WebMvcConfigurer {
         this.tokenService = tokenService;
     }
 
+    /**
+     * This method runs before the application running, and initialize the data in the DB.
+     */
     @Bean
     public void SeedDB() {
         try {
@@ -54,6 +59,10 @@ public class Config implements WebMvcConfigurer {
         }
     }
 
+    /**
+     * This method initialize the games in the DB as a result the api connection was failed.
+     * @return
+     */
     private String getGamesFromBackup() {
         try {
             File myObj = new File("src/main/resources/static/Games.json");
@@ -72,6 +81,9 @@ public class Config implements WebMvcConfigurer {
         }
     }
 
+    /**
+     * This class defines the firsts users in the DB.
+     */
     private void SeedUsers() {
         PasswordEncoder encoder = encoder();
         User user = new User("niv katz", encoder.encode("nivkatz30"), UserRole.ADMIN);
@@ -80,17 +92,26 @@ public class Config implements WebMvcConfigurer {
         userRepo.save(user2);
     }
 
+    /**
+     * This method encode the user password.
+     * @return
+     */
     @Bean
     public PasswordEncoder encoder() {
         return new BCryptPasswordEncoder();
     }
 
+    /**
+     * This method convert the date to the necessary format.
+     * @param dateAsString
+     * @return
+     */
     private LocalDateTime parseApiDate(String dateAsString) {
         return LocalDateTime.parse(dateAsString,DateTimeFormatter.ofPattern("MM/d/yyyy HH:mm"));
     }
 
     /**
-     *
+     * This method define the URI that needed an authorization.
      * @param registry
      */
     @Override
@@ -101,12 +122,21 @@ public class Config implements WebMvcConfigurer {
         registry.addInterceptor(new AdminInterceptor(this.tokenService, this.userRepo)).addPathPatterns("/games/updateResult");
     }
 
+    /**
+     * this method runs asynchronous for load the games from the Api.
+     */
     @Async
     void runAsync() {
         String token = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2MzRkMGZmNWRhYTlhZmYzZTc1YjdkMGIiLCJpYXQiOjE2NjU5OTQ3NDIsImV4cCI6MTY2NjA4MTE0Mn0.Yg22qdI8djhdrih1KHw-Zqa_tWOX-zH2j2tiptBhljM";
         CompletableFuture.supplyAsync(() -> this.callApi(token, true)).thenAccept(System.out::println);
     }
 
+    /**
+     * This method take the data about the games from the Api.
+     * @param token
+     * @param tryAgain
+     * @return
+     */
     public String callApi(String token, boolean tryAgain) {
         try {
             this.SeedGames(token);
@@ -130,6 +160,10 @@ public class Config implements WebMvcConfigurer {
         return "Load the games from the api successfully";
     }
 
+    /**
+     * This method get the necessary token from the Api.
+     * @return
+     */
     private String getToken() {
         try {
             RestTemplate restTemplate = new RestTemplate();
@@ -151,6 +185,11 @@ public class Config implements WebMvcConfigurer {
         }
     }
 
+    /**
+     * @param token
+     * This method take the games from the Api.
+     * @throws JsonProcessingException
+     */
     private void SeedGames(String token) throws JsonProcessingException {
         RestTemplate restTemplate = new RestTemplate();
         HttpHeaders headers = new HttpHeaders();
@@ -160,6 +199,10 @@ public class Config implements WebMvcConfigurer {
         insetGamesToDB(response.getBody());
     }
 
+    /**
+     * This method initialize the games we have got in the DB.
+     * @param json
+     */
     private void insetGamesToDB(String json) {
        try {
            JsonNode root = new ObjectMapper().readTree(json).path("data");
